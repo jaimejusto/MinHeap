@@ -71,6 +71,7 @@ class MinHeap:
         """
         Returns an object with a minimum key and removes it from the heap. If the heap is empty, the method raises a
         MinHeapException.
+            source: Open Data Structures 10.1.
             :return: minimum key from the heap.
             :rtype: object.
         """
@@ -91,37 +92,92 @@ class MinHeap:
 
     def build_heap(self, da: DynamicArray) -> None:
         """
-        TODO: Write this implementation
+        Receives a dynamic array with objects in any order and builds a proper MinHeap from them. Current content of
+        the MinHeap is lost.
+            :param DynamicArray da: collection of objects used to build a min heap.
         """
-        pass
+        # copy DA elements into heap content
+        self.heap = DynamicArray()
+        for i in range(da.length()):
+            self.heap.append(da[i])
+
+        # get first non-leaf element from the back of the array
+        size = self.heap.length()
+        first_non_leaf_elem = (size // 2) - 1
+
+        # percolate down each non-leaf element moving backwards checking if it's subtrees are proper heaps
+        while first_non_leaf_elem >= 0:
+            right_child = 2 * first_non_leaf_elem + 2
+            left_child = 2 * first_non_leaf_elem + 1
+
+            # parent is larger than right child
+            if right_child < size and self.heap[first_non_leaf_elem] > self.heap[right_child]:
+                # check if the right child is the minimum child
+                if self.heap[left_child] <= self.heap[right_child]:
+                    # left child was the minimum child, swap with parent
+                    self.heap.swap(first_non_leaf_elem, left_child)
+                    first_non_leaf_elem = left_child
+                else:
+                    # right child was the minimum child, swap with parent
+                    self.heap.swap(first_non_leaf_elem, right_child)
+                    first_non_leaf_elem = right_child
+            # parent is only larger than left child or no right child exists
+            elif left_child < size and self.heap[first_non_leaf_elem] > self.heap[left_child]:
+                # swap left child with parent
+                self.heap.swap(first_non_leaf_elem, left_child)
+                first_non_leaf_elem = left_child
+            # subtree is a proper heap
+            else:
+                first_non_leaf_elem -= 1
 
     def bubble_up(self, new_element_index):
+        """
+        Compares the values of the inserted element with the values of its parent. If the value of the parent is greater
+        than the value of the inserted element, the elements are swapped. The parent gets updated and the comparisons
+        continue until the beginning of the array has been reached or the parent is smaller than the element.
+        reference: Open Data Structures 10.1
+        """
         parent_index = ((new_element_index - 1) // 2)
         # swap new element with its parent until it is no longer smaller than its parent
         while new_element_index > 0 and self.heap[new_element_index] < self.heap[parent_index]:
+            # swap elements
             self.heap.swap(parent_index, new_element_index)
+            # update index
             new_element_index = parent_index
+            # get new parent
             parent_index = ((new_element_index - 1) // 2)
 
     def trickle_down(self, replacement_element_index):
-        size = self.heap.length() - 1
+        """
+        Compares the values of the replacement index with the minimum value of its children. If the replacement
+        element's value is greater than its minimum child's value, the two are swapped in the array and repeats until
+        reaching the correct spot.
+        reference: Open Data Structures 10.1
+        """
+        size = self.heap.length()
 
         # swap the replacement element with its minimum child
         while replacement_element_index >= 0:
             j = -1
             right_index = 2 * replacement_element_index + 2
+            # parent is larger than the right child
             if right_index < size and self.heap[right_index] < self.heap[replacement_element_index]:
                 left_index = 2 * replacement_element_index + 1
-                if self.heap[left_index] < self.heap[right_index]:
+                # right child isn't the minimum child
+                if self.heap[left_index] <= self.heap[right_index]:
                     j = left_index
+                # right child is the minimum child
                 else:
                     j = right_index
+            # parent is larger than the left child or there is no right child
             else:
                 left_index = 2 * replacement_element_index + 1
                 if left_index < size and self.heap[left_index] < self.heap[replacement_element_index]:
                     j = left_index
+            # swap parent with minimum child
             if j >= 0:
                 self.heap.swap(j, replacement_element_index)
+            # parent is smaller than both children
             replacement_element_index = j
 
 
